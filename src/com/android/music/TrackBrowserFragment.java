@@ -126,7 +126,7 @@ public class TrackBrowserFragment extends Fragment implements
     private static final int SHARE = CHILD_MENU_BASE + 7; // Menu to share audio
     private static final int DETAILS = CHILD_MENU_BASE + 100;
 
-    private static final String LOGTAG = "TrackBrowser";
+    private static final String LOGTAG = "TrackBrowserFragment";
     private final static int TOTAL_LIST_ITEMS = 10;
     private static final String FAVORITE_PLAYLIST = "-100";
 
@@ -1423,19 +1423,20 @@ public class TrackBrowserFragment extends Fragment implements
                 ret = queryhandler.doQuery(uri, mCursorCols, where.toString(),
                         null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER, async);
             } else if (mPlaylist.equals("recentlyadded")) {
-                // do a query for all songs added in the last X weeks
                 Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
                 if (!TextUtils.isEmpty(filter)) {
                     uri = uri.buildUpon()
                             .appendQueryParameter("filter", Uri.encode(filter))
                             .build();
                 }
-                int X = MusicUtils.getIntPref(mParentActivity, "numweeks", 2)
-                        * (3600 * 24 * 7);
+                int X = MusicUtils.getIntPref(mParentActivity, "numweeks", 1)
+                        * (60 * 60 * 24);
+                Log.w(LOGTAG, "Change X to 86400 seconds or 24 hours here; which means you can extend it by ? days in GUI");
                 where.append(" AND " + MediaStore.MediaColumns.DATE_ADDED + ">");
                 where.append(System.currentTimeMillis() / 1000 - X);
+                // Change it to DATE_ADDED and descending
                 ret = queryhandler.doQuery(uri, mCursorCols, where.toString(),
-                        null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER, async);
+                        null, MediaStore.Audio.Media.DATE_ADDED + " DESC", async);
             } else {
                 if (mPlaylist.equals(FAVORITE_PLAYLIST)) {
                     mPlaylist = String.valueOf(
